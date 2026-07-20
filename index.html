@@ -1,0 +1,609 @@
+﻿<!DOYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Guard | SOC Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="grid-overlay"></div>
+
+    <!-- LOGIN PAGE -->
+    <div id="login-page">
+        <div class="login-wrapper">
+            <div class="login-card glass-card neon-border">
+                <div style="text-align:center; margin-bottom:30px">
+                    <i id="shield-icon" class="fas fa-shield-halved" style="font-size:3rem; color:var(--primary); cursor:pointer"></i>
+                    <h1 class="orbitron" style="margin-top:15px; letter-spacing:2px">SECURITY GUARD</h1>
+                    <p style="color:var(--text-dim); font-size:0.8rem; margin-top:5px">Neural Threat Intelligence</p>
+                </div>
+                
+                <h2 id="form-title" class="orbitron" style="text-align:center; margin-bottom:15px; font-size:1.2rem">LOGIN</h2>
+                <p id="login-message" class="orbitron" style="color:var(--danger); text-align:center; margin-bottom:15px; font-size:0.9rem"></p>
+                
+                <form id="login-form">
+                    <div class="input-group">
+                        <label>Terminal ID (Email)</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input id="email-input" type="email" placeholder="analyst@soc.int" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Access Key (Password)</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input id="password-input" type="password" placeholder="••••••••" required>
+                            <button type="button" id="toggle-password" class="toggle-password-btn" title="Show/Hide Password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="password-feedback" class="password-feedback hidden"></div>
+                    </div>
+                    <button id="submit-btn" type="submit" class="btn-primary">
+                        <i class="fas fa-fingerprint"></i> <span id="btn-text">SECURE ACCESS</span>
+                    </button>
+                </form>
+                
+                <div style="text-align:center; margin-top:15px">
+                    <button id="forgot-btn" class="btn-secondary">Forgot Password?</button>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div style="text-align:center">
+                    <p style="color:var(--text-dim); margin-bottom:10px">Don't have an account?</p>
+                    <button id="toggle-register" class="btn-outline">REGISTER NEW USER</button>
+                </div>
+                
+                <div class="badge-grid">
+                    <div class="badge-item"><i class="fas fa-shield-check"></i> AES-256</div>
+                    <div class="badge-item"><i class="fas fa-satellite-dish"></i> SOC-LIVE</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboard-page" class="hidden">
+        <nav class="nav-header">
+            <div style="display:flex; align-items:center; gap:15px">
+                <i class="fas fa-shield-virus" style="color:var(--primary); font-size:1.8rem"></i>
+                <span class="orbitron" style="letter-spacing:1px; color:var(--primary)">SOC TERMINAL v2.0</span>
+                <span id="status-badge" class="offline-badge">OPTIMAL</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:20px">
+                <div style="text-align:right; line-height:1">
+                    <div id="user-name" class="orbitron" style="font-size:0.9rem">ADMIN</div>
+                    <div id="user-role" style="font-size:0.6rem; color:var(--text-dim)">System Admin</div>
+                </div>
+                <button id="logout-btn" class="btn-primary" style="width:auto; padding:8px 15px; font-size:0.7rem">
+                    DISCONNECT
+                </button>
+            </div>
+        </nav>
+
+        <!-- Admin Tabs -->
+        <div id="admin-tabs" class="nav-tabs" style="background: rgba(10,15,30,0.8); padding: 0 40px; border-bottom: 1px solid var(--border-color); display: none;">
+            <button class="nav-tab active" data-tab="overview">Overview</button>
+            <button class="nav-tab" data-tab="users">Users</button>
+            <button class="nav-tab" data-tab="phishing-reports">Phishing Reports</button>
+            <button class="nav-tab" data-tab="password-stats">Password Stats</button>
+            <button class="nav-tab" data-tab="activity-logs">Activity Logs</button>
+            <button class="nav-tab" data-tab="settings">Settings</button>
+            <button class="nav-tab" data-tab="chat">Chat</button>
+            <button class="nav-tab" data-tab="profile">Profile</button>
+        </div>
+
+        <!-- User Tabs -->
+        <div id="user-tabs" class="nav-tabs" style="background: rgba(10,15,30,0.8); padding: 0 40px; border-bottom: 1px solid var(--border-color); display: none;">
+            <button class="nav-tab active" data-tab="tools">Tools</button>
+            <button class="nav-tab" data-tab="history">Scan History</button>
+            <button class="nav-tab" data-tab="chat">Chat with Admin</button>
+            <button class="nav-tab" data-tab="profile">Profile</button>
+        </div>
+
+        <main class="dashboard-container">
+            <!-- Overview Tab (Admin & User) -->
+            <div id="tab-overview" class="tab-content">
+                <div class="stats-grid">
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">System Status</div>
+                        <div id="stat-status" class="stat-value" style="color:var(--success)">OPTIMAL</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Total Users</div>
+                        <div id="stat-users" class="stat-value">0</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Login Attempts</div>
+                        <div id="stat-attempts" class="stat-value">0</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Successful Logins</div>
+                        <div id="stat-success" class="stat-value" style="color:var(--success)">0</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Failed Logins</div>
+                        <div id="stat-failed" class="stat-value" style="color:var(--danger)">0</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">URLs Scanned</div>
+                        <div id="stat-urls" class="stat-value">0</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Threats Blocked</div>
+                        <div id="stat-threats" class="stat-value" style="color:var(--danger)">0</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-label">Passwords Analyzed</div>
+                        <div id="stat-passwords" class="stat-value">0</div>
+                    </div>
+                </div>
+                <div class="tool-grid">
+                    <!-- PASSWORD TOOL -->
+                    <div class="glass-card">
+                        <h3 class="orbitron"><i class="fas fa-key" style="color:var(--primary); margin-right:10px"></i>PASS-ANALYZER</h3>
+                        <div class="input-group" style="margin-top:20px">
+                            <div class="input-wrapper">
+                                <i class="fas fa-vault"></i>
+                                <input id="password-check-input" type="text" placeholder="Enter password to test...">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px">
+                            <button id="analyze-btn" class="btn-primary">RUN HEURISTICS</button>
+                            <button id="gen-pass-btn" class="btn-outline"><i class="fas fa-dice"></i> GENERATE</button>
+                        </div>
+                        <div id="password-result" class="result-box hidden">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                                <span id="pass-label" class="orbitron" style="color:var(--danger)">WEAK</span>
+                                <span id="pass-score" class="orbitron">0/5</span>
+                            </div>
+                            <div class="strength-bar">
+                        <div id="pass-fill" class="strength-fill" style="width:0; background:var(--danger)"></div>
+                    </div>
+                    <div id="pass-checks" class="check-grid"></div>
+                        </div>
+                    </div>
+                    <!-- PHISHING TOOL -->
+                    <div class="glass-card">
+                        <h3 class="orbitron"><i class="fas fa-fish" style="color:var(--primary); margin-right:10px"></i>PHISHING SCANNER</h3>
+                        <div class="input-group" style="margin-top:20px">
+                            <div class="input-wrapper">
+                                <i class="fas fa-link"></i>
+                                <input id="phish-url-input" type="text" placeholder="Enter URL to scan...">
+                            </div>
+                        </div>
+                        <button id="scan-btn" class="btn-primary">SCAN URL</button>
+                        <div id="phish-result" class="result-box hidden">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                                <span id="phish-status" class="orbitron" style="color:var(--success)">LIKELY SAFE</span>
+                                <span id="phish-score" class="orbitron">0% RISK</span>
+                            </div>
+                            
+                            <!-- URL Security Score -->
+                            <div id="phish-security-score" style="margin:15px 0;">
+                                <div class="strength-bar" style="margin:10px 0;">
+                                    <div id="phish-score-fill" class="strength-fill" style="width:0; background:var(--warning)"></div>
+                                </div>
+                                <div id="phish-domain-details" style="margin-top:15px; font-size:14px;"></div>
+                            </div>
+                            
+                            <div id="phish-reasons" style="margin-top:10px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Tab (User) -->
+            <div id="tab-tools" class="tab-content hidden">
+                <div class="tool-grid">
+                    <div class="glass-card">
+                        <h3 class="orbitron"><i class="fas fa-key" style="color:var(--primary); margin-right:10px"></i>PASS-ANALYZER</h3>
+                        <div class="input-group" style="margin-top:20px">
+                            <div class="input-wrapper">
+                                <i class="fas fa-vault"></i>
+                                <input id="user-password-check-input" type="text" placeholder="Enter password to test...">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px">
+                            <button id="user-analyze-btn" class="btn-primary">RUN HEURISTICS</button>
+                            <button id="user-gen-pass-btn" class="btn-outline"><i class="fas fa-dice"></i> GENERATE</button>
+                        </div>
+                        <div id="user-password-result" class="result-box hidden">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                                <span id="user-pass-label" class="orbitron" style="color:var(--danger)">WEAK</span>
+                                <span id="user-pass-score" class="orbitron">0/5</span>
+                            </div>
+                            <div class="strength-bar">
+                        <div id="user-pass-fill" class="strength-fill" style="width:0; background:var(--danger)"></div>
+                    </div>
+                    <div id="user-pass-checks" class="check-grid"></div>
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="orbitron"><i class="fas fa-fish" style="color:var(--primary); margin-right:10px"></i>PHISHING SCANNER</h3>
+                        <div class="input-group" style="margin-top:20px">
+                            <div class="input-wrapper">
+                                <i class="fas fa-link"></i>
+                                <input id="user-phish-url-input" type="text" placeholder="Enter URL to scan...">
+                            </div>
+                        </div>
+                        <button id="user-scan-btn" class="btn-primary">SCAN URL</button>
+                        <div id="user-phish-result" class="result-box hidden">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                                <span id="user-phish-status" class="orbitron" style="color:var(--success)">LIKELY SAFE</span>
+                                <span id="user-phish-score" class="orbitron">0% RISK</span>
+                            </div>
+                            
+                            <!-- URL Security Score -->
+                            <div id="user-phish-security-score" style="margin:15px 0;">
+                                <div class="strength-bar" style="margin:10px 0;">
+                                    <div id="user-phish-score-fill" class="strength-fill" style="width:0; background:var(--warning)"></div>
+                                </div>
+                                <div id="user-phish-domain-details" style="margin-top:15px; font-size:14px;"></div>
+                            </div>
+                            
+                            <div id="user-phish-reasons" style="margin-top:10px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab (Admin) -->
+            <div id="tab-users" class="tab-content hidden">
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                        <h3 class="orbitron"><i class="fas fa-users" style="color:var(--primary); margin-right:10px"></i>USER MANAGEMENT</h3>
+                        <button id="add-user-btn" class="btn-primary btn-small"><i class="fas fa-plus"></i> Add User</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phishing Reports Tab (Admin) -->
+            <div id="tab-phishing-reports" class="tab-content hidden">
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <h3 class="orbitron"><i class="fas fa-flag" style="color:var(--primary); margin-right:10px"></i>PHISHING REPORTS</h3>
+                        <button id="clear-phishing-btn" class="btn-outline btn-small"><i class="fas fa-trash"></i> CLEAR ALL</button>
+                    </div>
+                    <div class="table-container" style="margin-top:20px">
+                        <table id="phishing-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>URL</th>
+                                    <th>Status</th>
+                                    <th>Score</th>
+                                    <th>Reasons</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Stats Tab (Admin) -->
+            <div id="tab-password-stats" class="tab-content hidden">
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <h3 class="orbitron"><i class="fas fa-chart-bar" style="color:var(--primary); margin-right:10px"></i>PASSWORD STRENGTH HISTORY</h3>
+                        <button id="clear-password-stats-btn" class="btn-outline btn-small"><i class="fas fa-trash"></i> CLEAR ALL</button>
+                    </div>
+                    <div class="table-container" style="margin-top:20px">
+                        <table id="password-stats-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Score</th>
+                                    <th>Label</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Logs Tab (Admin) -->
+            <div id="tab-activity-logs" class="tab-content hidden">
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <h3 class="orbitron"><i class="fas fa-history" style="color:var(--primary); margin-right:10px"></i>ACTIVITY LOGS</h3>
+                        <button id="clear-logs-btn" class="btn-outline btn-small"><i class="fas fa-trash"></i> CLEAR ALL</button>
+                    </div>
+                    <div class="table-container" style="margin-top:20px">
+                        <table id="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>User</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab (Admin) -->
+            <div id="tab-settings" class="tab-content hidden">
+                <div class="glass-card">
+                    <h3 class="orbitron"><i class="fas fa-cog" style="color:var(--primary); margin-right:10px"></i>SYSTEM SETTINGS</h3>
+                    <div class="input-group" style="margin-top:20px">
+                        <label>System Status</label>
+                        <div class="input-wrapper">
+                            <select id="system-status-select">
+                                <option value="OPTIMAL">OPTIMAL</option>
+                                <option value="WARNING">WARNING</option>
+                                <option value="CRITICAL">CRITICAL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:15px">
+                        <button id="save-settings-btn" class="btn-primary">SAVE SETTINGS</button>
+                        <button id="reset-all-stats-btn" class="btn-outline">RESET ALL STATS</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab (User) -->
+            <div id="tab-history" class="tab-content hidden">
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <h3 class="orbitron"><i class="fas fa-history" style="color:var(--primary); margin-right:10px"></i>SCAN HISTORY</h3>
+                        <button id="clear-history-btn" class="btn-outline btn-small"><i class="fas fa-trash"></i> CLEAR ALL</button>
+                    </div>
+                    <div class="table-container" style="margin-top:20px">
+                        <table id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Type</th>
+                                    <th>Result</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tab-profile" class="tab-content hidden">
+                <div class="glass-card">
+                    <h3 class="orbitron"><i class="fas fa-user-circle" style="color:var(--primary); margin-right:10px"></i>EDIT PROFILE</h3>
+                    
+                    <div style="display:flex; flex-direction:column; align-items:center; margin:30px 0">
+                        <img id="profile-pic" src="" alt="Profile Picture" style="width:150px; height:150px; border-radius:50%; object-fit:cover; border:3px solid var(--primary); margin-bottom:15px; background:#111827">
+                        <label for="profile-pic-input" class="btn-outline btn-small" style="cursor:pointer; width:auto">
+                            <i class="fas fa-camera"></i> Change Picture
+                        </label>
+                        <input type="file" id="profile-pic-input" accept="image/*" style="display:none">
+                    </div>
+                    
+                    <form id="profile-form">
+                        <div class="input-group">
+                            <label>Name</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user"></i>
+                                <input id="profile-name-input" type="text" placeholder="Enter name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Email</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope"></i>
+                                <input id="profile-email-input" type="email" placeholder="Enter email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>New Password (leave blank to keep current)</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock"></i>
+                                <input id="profile-password-input" type="password" placeholder="Enter new password">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Chat Tab (Admin & User) -->
+            <div id="tab-chat" class="tab-content">
+                <div class="glass-card" style="max-width: 1000px; margin: 0 auto;">
+                    <div style="display:flex; height: 600px;">
+                        <!-- Conversations List (Admin Only) -->
+                        <div id="conversations-list" class="glass-card" style="width: 300px; border-right: 1px solid var(--border-color); padding:20px; display:none; flex-direction:column; gap:10px;">
+                            <h3 class="orbitron" style="margin-bottom:10px;"><i class="fas fa-comments"></i> Conversations</h3>
+                            <div id="conversations-container" style="overflow-y:auto; flex:1;"></div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div style="flex:1; display:flex; flex-direction:column;">
+                            <div id="chat-header" class="orbitron" style="padding:20px; border-bottom:1px solid var(--border-color); font-size:18px;">
+                                <i class="fas fa-shield-alt"></i> Chat with Admin
+                            </div>
+                            
+                            <div id="messages-container" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:10px;">
+                            </div>
+                            
+                            <div style="padding:20px; border-top:1px solid var(--border-color);">
+                                <div style="display:flex; gap:10px;">
+                                    <input id="chat-input" type="text" placeholder="Type your message..." style="flex:1;">
+                                    <button id="send-btn" class="btn-primary"><i class="fas fa-paper-plane"></i> Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal-overlay hidden">
+        <div class="modal glass-card neon-border">
+            <h3 id="modal-title" class="orbitron" style="margin-bottom:20px">ADD USER</h3>
+            <form id="user-form">
+                <input type="hidden" id="edit-user-id">
+                <div class="input-group">
+                    <label>Name</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input id="user-name-input" type="text" placeholder="Enter name" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input id="user-email-input" type="email" placeholder="Enter email" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input id="user-password-input" type="password" placeholder="Enter password">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Role</label>
+                    <div class="input-wrapper">
+                        <select id="user-role-input" required>
+                            <option value="User">User</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px">
+                    <button type="submit" class="btn-primary">SAVE</button>
+                    <button type="button" id="cancel-modal-btn" class="btn-outline">CANCEL</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Logout Confirm Modal -->
+    <div id="logout-modal" class="modal-overlay hidden">
+        <div class="modal glass-card neon-border" style="text-align: center;">
+            <i class="fas fa-sign-out-alt" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
+            <h3 class="orbitron" style="margin-bottom: 15px;">Disconnect?</h3>
+            <p style="color: var(--text-dim); margin-bottom: 25px;">Are you sure you want to log out?</p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button id="logout-confirm-btn" class="btn-primary" style="background: var(--danger);">
+                    <i class="fas fa-check"></i> Yes, Log Out
+                </button>
+                <button id="logout-cancel-btn" class="btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>    
+
+    <!-- Prompt Modal (for forgot password email input) -->
+    <div id="prompt-modal" class="modal-overlay hidden">
+        <div class="modal glass-card neon-border">
+            <h3 id="prompt-title" class="orbitron" style="margin-bottom: 15px;">Enter Email</h3>
+            <p id="prompt-message" style="color: var(--text-dim); margin-bottom: 15px;"></p>
+            <input id="prompt-input" type="text" style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-main);">
+            <div style="display:flex; gap:10px;">
+                <button id="prompt-confirm-btn" class="btn-primary">
+                    <i class="fas fa-check"></i> Confirm
+                </button>
+                <button id="prompt-cancel-btn" class="btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal (for notifications) -->
+    <div id="alert-modal" class="modal-overlay hidden">
+        <div class="modal glass-card neon-border" style="text-align: center;">
+            <i id="alert-icon" class="fas fa-info-circle" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <h3 id="alert-title" class="orbitron" style="margin-bottom: 15px;">Notification</h3>
+            <p id="alert-message" style="color: var(--text-dim); margin-bottom: 25px;"></p>
+            <button id="alert-confirm-btn" class="btn-primary">
+                <i class="fas fa-check"></i> Okay
+            </button>
+        </div>
+    </div>
+    
+    <!-- Delete User Confirmation Modal -->
+    <div id="delete-user-modal" class="modal-overlay hidden">
+        <div class="modal glass-card neon-border" style="text-align: center;">
+            <i class="fas fa-trash" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
+            <h3 class="orbitron" style="margin-bottom: 15px;">Delete User?</h3>
+            <p style="color: var(--text-dim); margin-bottom: 25px;">Are you sure you want to delete this user? This action cannot be undone!</p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button id="delete-user-confirm-btn" class="btn-primary" style="background: var(--danger);">
+                    <i class="fas fa-check"></i> Yes, Delete
+                </button>
+                <button id="delete-user-cancel-btn" class="btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Generic Confirmation Modal -->
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="modal glass-card neon-border" style="text-align: center;">
+            <i id="confirm-icon" class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--warning); margin-bottom: 15px;"></i>
+            <h3 id="confirm-title" class="orbitron" style="margin-bottom: 15px;">Confirm Action</h3>
+            <p id="confirm-message" style="color: var(--text-dim); margin-bottom: 25px;"></p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button id="confirm-confirm-btn" class="btn-primary" style="background: var(--danger);">
+                    <i class="fas fa-check"></i> Yes, Confirm
+                </button>
+                <button id="confirm-cancel-btn" class="btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+<script src="register.js"></script>
+<script src="dashboard.js"></script>
+<script src="index.js"></script>
+</body>
+</html>
