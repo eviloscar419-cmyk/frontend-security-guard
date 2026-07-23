@@ -84,7 +84,6 @@ let isLoginMode = true;
         function detectPhishing(url) { 
             const suspiciousTLDs = [
     
-            const suspiciousTLDs = [
   "xyz",
   "top",
   "click",
